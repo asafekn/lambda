@@ -30,3 +30,28 @@ subst var term exp =
       | otherwise -> Fun arg (subst var term body)
     Apply left right ->
       Apply (subst var term left) (subst var term right)
+
+
+data Token
+  = TokenParentesisOpen   -- "("
+  | TokenParentesisClose  -- ")"
+  | TokenLambda           -- "\"
+  | TokenArrow            -- "->"
+  | TokenVar Exp          -- variavel
+  | TokenFuncao Exp       -- funcao
+  | TokenAplicacao Exp    -- aplicação de função
+  deriving (Show, Eq)
+
+
+lex :: String -> [Token]
+lex xs =
+  case xs of
+    [] -> []
+    ' ' : rest -> lex rest
+    '(' : rest -> TokenParentesisOpen : lex rest
+    ')' : rest -> TokenParentesisClose : lex rest
+    '\\' : rest -> TokenLambda : lex rest
+    '-' : ('>' : rest) -> TokenArrow : lex rest
+    -- TokenVar
+    -- TokenFuncao
+    -- TokenAplicacao
