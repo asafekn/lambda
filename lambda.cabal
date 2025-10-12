@@ -46,4 +46,5 @@ test-suite lambda-test
     main-is:          Main.hs
     build-depends:
         base ^>=4.20.0.0,
-        lambda
+        lambda,
+        hspec

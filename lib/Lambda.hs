@@ -1,5 +1,7 @@
 module Lambda where
 
+import Prelude hiding (lex, exp)
+
 
 data Exp
   = Var String
@@ -33,13 +35,11 @@ subst var term exp =
 
 
 data Token
-  = TokenParentesisOpen   -- "("
-  | TokenParentesisClose  -- ")"
-  | TokenLambda           -- "\"
-  | TokenArrow            -- "->"
-  | TokenVar Exp          -- variavel
-  | TokenFuncao Exp       -- funcao
-  | TokenAplicacao Exp    -- aplicação de função
+  = TokenParentesisOpen     -- "("
+  | TokenParentesisClose    -- ")"
+  | TokenLambda             -- "\"
+  | TokenArrow              -- "->"
+  | TokenIdentifier String
   deriving (Show, Eq)
 
 
@@ -51,7 +51,7 @@ lex xs =
     '(' : rest -> TokenParentesisOpen : lex rest
     ')' : rest -> TokenParentesisClose : lex rest
     '\\' : rest -> TokenLambda : lex rest
-    '-' : ('>' : rest) -> TokenArrow : lex rest
-    -- TokenVar
-    -- TokenFuncao
-    -- TokenAplicacao
+    '-' : '>' : rest -> TokenArrow : lex rest
+    _ ->
+      let (identifier, rest) = span (/= ' ') xs
+      in TokenIdentifier identifier : lex rest

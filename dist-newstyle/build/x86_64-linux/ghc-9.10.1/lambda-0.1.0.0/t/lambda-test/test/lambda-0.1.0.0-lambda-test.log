@@ -1,0 +1,3 @@
+Test suite lambda-test: RUNNING...
+Test suite lambda-test: FAIL
+Test suite logged to: /home/asafe/projects/lambda/dist-newstyle/build/x86_64-linux/ghc-9.10.1/lambda-0.1.0.0/t/lambda-test/test/lambda-0.1.0.0-lambda-test.log
