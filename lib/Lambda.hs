@@ -52,6 +52,16 @@ lex xs =
     ')' : rest -> TokenParentesisClose : lex rest
     '\\' : rest -> TokenLambda : lex rest
     '-' : '>' : rest -> TokenArrow : lex rest
-    _ ->
-      let (identifier, rest) = span (/= ' ') xs
-      in TokenIdentifier identifier : lex rest
+    c : rest ->
+      if 'a' <= c && c <= 'z' then
+        let (identifier, rest) = span identifier (c : rest)
+        in TokenIdentifier identifier : lex rest
+    _ -> Error "Invalid function"
+
+identifierChar :: Char -> Bool
+identifierChar c =
+  if 'a' <= c && c <= 'z' then True
+  else if 'A' <= c && c <= 'Z' then True
+  else if '0' <= c && c <= '9' then True
+  else if c == '_' then True
+  else False
