@@ -2,7 +2,6 @@ module Lambda where
 
 import Prelude hiding (lex, exp)
 
-
 data Exp
   = Var String
   | Fun String Exp
@@ -44,19 +43,23 @@ data Token
 
 
 lex :: String -> [Token]
-lex xs =
-  case xs of
-    [] -> []
-    ' ' : rest -> lex rest
-    '(' : rest -> TokenParentesisOpen : lex rest
-    ')' : rest -> TokenParentesisClose : lex rest
-    '\\' : rest -> TokenLambda : lex rest
-    '-' : '>' : rest -> TokenArrow : lex rest
-    c : rest ->
-      if 'a' <= c && c <= 'z' then
-        let (identifier, rest') = span identifierChar (c : rest)
-        in TokenIdentifier identifier : lex rest'
-      else error "Invalid function"
+lex str = reverse $ go [] str
+  where
+  go :: [Token] -> String -> [Token]
+  go prev xs =
+    case xs of
+      [] -> prev
+      ' ' : rest -> go prev rest
+      '(' : rest -> go (TokenParentesisOpen : prev) rest
+      ')' : rest -> go (TokenParentesisClose : prev) rest
+      '\\' : rest -> go (TokenLambda : prev) rest
+      '-' : '>' : rest -> go (TokenArrow : prev) rest
+      c : rest ->
+        if 'a' <= c && c <= 'z' then
+          let (identifier, rest') = span identifierChar (c : rest)
+          in go (TokenIdentifier identifier : prev) rest'
+        else error "Invalid function"
+
 
 identifierChar :: Char -> Bool
 identifierChar c =

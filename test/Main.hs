@@ -1,8 +1,9 @@
 module Main (main) where
 
-import Test.Hspec (hspec, describe, shouldBe, it)
+import Test.Hspec (hspec, describe, shouldBe, it, shouldThrow, errorCall)
 import Lambda
 import Prelude hiding (lex, exp)
+import Control.Exception (evaluate)
 
 main :: IO ()
 main = hspec $ do
@@ -25,5 +26,6 @@ main = hspec $ do
         TokenIdentifier "identifier_One",
         TokenParentesisClose]
 
-    it "lex shuld not work, because of the first Caps char lol" $
-      lex "(\\ Identifier_Two -> Identifier_Two)" `shouldBe` error "Invalid function"
+    it "variable can't start with upper case letter" $ do
+      (evaluate $ lex "(\\ I -> I)") `shouldThrow` errorCall "Invalid function"
+
