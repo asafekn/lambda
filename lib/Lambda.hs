@@ -54,9 +54,9 @@ lex xs =
     '-' : '>' : rest -> TokenArrow : lex rest
     c : rest ->
       if 'a' <= c && c <= 'z' then
-        let (identifier, rest) = span identifier (c : rest)
-        in TokenIdentifier identifier : lex rest
-    _ -> Error "Invalid function"
+        let (identifier, rest') = span identifierChar (c : rest)
+        in TokenIdentifier identifier : lex rest'
+      else error "Invalid function"
 
 identifierChar :: Char -> Bool
 identifierChar c =

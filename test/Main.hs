@@ -16,7 +16,7 @@ main = hspec $ do
         TokenIdentifier "x",
         TokenParentesisClose]
 
-    it "function with identifier diferent names" $
+    it "function with identifier diferent name" $
       lex "(\\ identifier_One -> identifier_One)" `shouldBe`
         [TokenParentesisOpen,
         TokenLambda,
@@ -26,4 +26,4 @@ main = hspec $ do
         TokenParentesisClose]
 
     it "lex shuld not work, because of the first Caps char lol" $
-      lex "(\\ Identifier_Two -> Identifier_Two)" `shouldBe` Error "invalid function"
+      lex "(\\ Identifier_Two -> Identifier_Two)" `shouldBe` error "Invalid function"
