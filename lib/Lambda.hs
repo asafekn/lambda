@@ -1,10 +1,11 @@
 module Lambda where
 
 import Prelude hiding (lex, exp)
+import Control.Applicative ((<|>))
 
 data Exp
   = Var String
-  | Fun String Exp
+  | Lam String Exp
   | Apply Exp Exp
   deriving Show
 
@@ -15,8 +16,8 @@ eval exp = case exp of
     case left of
       Apply _ _ -> Apply (eval left) right
       Var _ -> Apply left (eval right)
-      Fun var term -> eval (subst var right term)
-  Fun _ _ -> exp
+      Lam var term -> eval (subst var right term)
+  Lam _ _ -> exp
   Var _ -> exp
 
 
@@ -26,9 +27,9 @@ subst var term exp =
     Var v
       | var == v -> term
       | otherwise -> exp
-    Fun arg body
+    Lam arg body
       | var == arg -> exp
-      | otherwise -> Fun arg (subst var term body)
+      | otherwise -> Lam arg (subst var term body)
     Apply left right ->
       Apply (subst var term left) (subst var term right)
 
@@ -68,3 +69,34 @@ identifierChar c =
   else if '0' <= c && c <= '9' then True
   else if c == '_' then True
   else False
+
+
+parse :: [Token] -> Exp
+parse tokens =
+  case parseExp tokens of
+    Just (exp , []) -> exp
+    Just (_ , tokens') -> error $ "tokens left " <> (show $ length tokens')
+    Nothing -> error "no parse"
+
+
+parseExp :: [Token] -> Maybe (Exp, [Token])
+parseExp tokens =
+  parseLam tokens <|> parseApp tokens
+
+
+parseLam :: [Token] -> Maybe (Exp, [Token])
+parseLam tokens =
+  case tokens of
+    TokenLambda : TokenIdentifier name : TokenArrow : rest -> do
+      (exp, tokens') <- parseExp rest
+      return ((Lam name exp), tokens')
+    _ -> Nothing
+
+
+
+parseApp :: [Token] -> Maybe (Exp, [Token])
+parseApp tokens = undefined
+
+
+parseAtom :: [Token] -> Maybe (Exp, [Token])
+parseAtom tokens = undefined
