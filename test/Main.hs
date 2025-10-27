@@ -1,15 +1,17 @@
+{-# LANGUAGE QuasiQuotes #-}
 module Main (main) where
 
 import Test.Hspec (hspec, describe, shouldBe, it, shouldThrow, errorCall)
 import Lambda
 import Prelude hiding (lex, exp)
 import Control.Exception (evaluate)
+import Data.String.Interpolate (i)
 
 main :: IO ()
 main = hspec $ do
   describe "lexing" $ do
     it "function" $
-      lex "(\\ x -> x)" `shouldBe`
+      lex [i|(\\ x -> x)|] `shouldBe`
         [TokenParentesisOpen,
         TokenLambda,
         TokenIdentifier "x",
@@ -57,3 +59,8 @@ main = hspec $ do
     it "parse lambda with parentheses application" $
       parse (lex "(\\x -> (x y))") `shouldBe`
         Lam "x" (Apply (Var "x") (Var "y"))
+
+  describe "evaluate" $ do
+    it "simple function application" $
+      eval (parse (lex "(\\ x -> x) y")) `shouldBe`
+        Var "y"
