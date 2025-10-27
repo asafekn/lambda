@@ -13,7 +13,7 @@ data Exp
 eval :: Exp -> Exp
 eval exp = case exp of
   Apply left right ->
-    case left of
+    case eval left of
       Apply _ _ -> Apply (eval left) right
       Var _ -> Apply left (eval right)
       Lam var term -> eval (subst var right term)
