@@ -7,7 +7,7 @@ data Exp
   = Var String
   | Lam String Exp
   | Apply Exp Exp
-  deriving Show
+  deriving (Show, Eq)
 
 
 eval :: Exp -> Exp
@@ -93,10 +93,25 @@ parseLam tokens =
     _ -> Nothing
 
 
-
 parseApp :: [Token] -> Maybe (Exp, [Token])
-parseApp tokens = undefined
+parseApp tokens = do
+  (first, rest) <- parseAtom tokens
+  parseApps first rest
+  where
+    parseApps left tokens' =
+      case parseAtom tokens' of
+        Just (right, rest') -> parseApps (Apply left right) rest'
+        Nothing -> Just (left, tokens')
+
 
 
 parseAtom :: [Token] -> Maybe (Exp, [Token])
-parseAtom tokens = undefined
+parseAtom tokens =
+  case tokens of
+    (TokenIdentifier name) : rest -> Just (Var name, rest)
+    TokenParentesisOpen : rest -> do
+      (exp, rest') <- parseExp rest
+      case rest' of
+        TokenParentesisClose : rest'' -> Just (exp, rest'')
+        _ -> Nothing
+    _ -> Nothing
