@@ -51,6 +51,9 @@ lex str = reverse $ go [] str
     case xs of
       [] -> prev
       ' ' : rest -> go prev rest
+      '\n' : rest -> go prev rest
+      '\r' : rest -> go prev rest
+      '\t' : rest -> go prev rest
       '(' : rest -> go (TokenParentesisOpen : prev) rest
       ')' : rest -> go (TokenParentesisClose : prev) rest
       '\\' : rest -> go (TokenLambda : prev) rest
