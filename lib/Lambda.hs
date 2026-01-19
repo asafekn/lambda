@@ -2,13 +2,42 @@ module Lambda where
 
 import Prelude hiding (lex, exp)
 import Control.Applicative ((<|>))
+import Data.Map.Strict (Map)
+import qualified Data.Map.Strict as Map
 
 data Exp
   = Var String
   | Lam String Exp
   | Apply Exp Exp
+  | Prim Prim
+  | PrimOp String [Exp]
   deriving (Show, Eq)
 
+data Prim
+  = Double Double
+  deriving (Show, Eq)
+
+primOps :: Map String (Exp, [Exp] -> Exp)
+primOps = Map.fromList
+  [ ("add", (expAdd, evalAdd))
+  ]
+  where
+  expAdd :: Exp
+  expAdd = Lam "x" (Lam "y" (PrimOp "add" [Var "x", Var "y"]))
+
+  evalAdd :: [Exp] -> Exp
+  evalAdd exps = case exps of
+    [x, y] ->
+      case (x, y) of
+        (Prim (Double x'), Prim (Double y')) -> Prim (Double (x' + y'))
+        _ -> error $ "type error"
+    _ -> error $ "expected 2 arguments but got: " <> show (length exps)
+
+evalProgram :: Exp -> Exp
+evalProgram exp = eval $ foldr (\(op, opExp) exp' -> subst op opExp exp') exp ops
+  where
+  ops :: [(String, Exp)]
+  ops = Map.toList (fmap fst primOps)
 
 eval :: Exp -> Exp
 eval exp = case exp of
@@ -17,8 +46,15 @@ eval exp = case exp of
       Apply _ _ -> Apply (eval left) right
       Var _ -> Apply left (eval right)
       Lam var term -> eval (subst var right term)
+      Prim _ -> error "cannot apply prim"
+      PrimOp _ _ -> error "compiler error: applying prim op"
   Lam _ _ -> exp
   Var _ -> exp
+  Prim _ -> exp
+  PrimOp op args ->
+    case Map.lookup op primOps of
+      Nothing -> error $ "unknown operation: " <> op
+      Just (_, evalOp) -> evalOp $ fmap eval args
 
 
 subst :: String -> Exp -> Exp -> Exp
@@ -32,7 +68,8 @@ subst var term exp =
       | otherwise -> Lam arg (subst var term body)
     Apply left right ->
       Apply (subst var term left) (subst var term right)
-
+    Prim _ -> exp
+    PrimOp op args -> PrimOp op (fmap (subst var term) args)
 
 data Token
   = TokenParentesisOpen     -- "("
@@ -105,8 +142,6 @@ parseApp tokens = do
       case parseAtom tokens' of
         Just (right, rest') -> parseApps (Apply left right) rest'
         Nothing -> Just (left, tokens')
-
-
 
 parseAtom :: [Token] -> Maybe (Exp, [Token])
 parseAtom tokens =

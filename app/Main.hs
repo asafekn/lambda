@@ -8,15 +8,14 @@ import System.Environment (getArgs)
 main :: IO ()
 main = do
   args <- getArgs
-  if args == [] then 
-    runRepl 
-  else 
-    runFile (head args)
+  case args of
+    [] -> runRepl
+    file : _ -> runFile file
 
 runFile :: FilePath -> IO ()
 runFile f = do
   content <- readFile f
-  putStrLn (show $ eval (parse (lex content)))
+  putStrLn (show $ evalProgram (parse (lex content)))
 
 runRepl :: IO ()
 runRepl = do
@@ -25,4 +24,4 @@ runRepl = do
   putStr "lambda> "
   interact (concat . fmap repl . lines)
   where
-    repl str = (show $ eval (parse (lex str))) <> "\nlambda> "
+    repl str = (show $ evalProgram (parse (lex str))) <> "\nlambda> "
